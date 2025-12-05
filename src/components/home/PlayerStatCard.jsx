@@ -1,7 +1,7 @@
 import React from 'react'
 
 const PlayerStatCard = ({ player, statType, statValue, totalValue, percentage, rank }) => {
-  // Configurar la información según el tipo de estadística
+
   const getStatConfig = () => {
     switch(statType) {
       case 'points':

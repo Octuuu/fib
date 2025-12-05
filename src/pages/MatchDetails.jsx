@@ -428,8 +428,6 @@ const MatchDetails = () => {
                     day: 'numeric',
                     month: 'long',
                     year: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
                   })}</span>
                 </div>
                 {match.location && (
@@ -457,7 +455,6 @@ const MatchDetails = () => {
           <div className="bg-gradient-to-r from-blue-50 to-gray-50 rounded-lg p-4 sm:p-6 md:p-8 mb-6">
   <div className="flex items-center justify-between gap-3 sm:gap-4 md:gap-6">
     
-    {/* Equipo local */}
     <div className="flex flex-col items-center flex-1 text-center">
       <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold truncate w-full">
         {homeTeam?.short_name || homeTeam?.name || 'Local'}

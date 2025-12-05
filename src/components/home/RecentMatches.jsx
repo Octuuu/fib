@@ -26,6 +26,13 @@ const RecentMatches = ({ matches, loading }) => {
     )
   }
 
+  // Función para formatear tiempo sin segundos
+  const formatTime = (timeString) => {
+    if (!timeString) return ''
+    // timeString viene como "21:30:00" o "22:00:00"
+    return timeString.substring(0, 5) // Toma solo "21:30" o "22:00"
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
       <div className="text-center mb-8 sm:mb-12">
@@ -36,6 +43,7 @@ const RecentMatches = ({ matches, loading }) => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
         {matches.map((match) => {
+          // Usar la fecha directamente desde Supabase
           const matchDate = new Date(match.match_date)
           const homeTeam = match.home_team
           const awayTeam = match.away_team
@@ -88,7 +96,8 @@ const RecentMatches = ({ matches, loading }) => {
                       {match.home_score ?? 0} - {match.away_score ?? 0}
                     </div>
                     <div className="text-xs sm:text-sm text-gray-500 mt-1">
-                      {matchDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                      {/* Usar match_time directamente en lugar de toLocaleTimeString */}
+                      {match.match_time ? formatTime(match.match_time) : '--:--'}
                     </div>
                     {match.status === 'finished' && (
                       <div className="text-xs mt-1 px-2 py-0.5 bg-red-100 text-red-800 rounded-full font-semibold">

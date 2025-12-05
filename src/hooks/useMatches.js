@@ -6,6 +6,14 @@ export const useMatches = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // Función para ajustar UTC a hora Paraguay (UTC-4)
+  const adjustToParaguayTime = (dateString) => {
+    if (!dateString) return null
+    const date = new Date(dateString)
+    // Sumar 4 horas para convertir UTC a hora Paraguay
+    return new Date(date.getTime() + (4 * 60 * 60 * 1000))
+  }
+
   const fetchMatches = async () => {
     try {
       setLoading(true)
@@ -23,8 +31,24 @@ export const useMatches = () => {
 
       if (error) throw error
       
-      console.log('Matches loaded successfully:', data?.length || 0)
-      setMatches(data || [])
+      // Agregar fecha ajustada a Paraguay
+      const matchesWithAdjustedDates = (data || []).map(match => ({
+        ...match,
+        paraguay_date: adjustToParaguayTime(match.match_date)
+      }))
+      
+      console.log('Matches loaded successfully:', matchesWithAdjustedDates.length)
+      
+      if (matchesWithAdjustedDates.length > 0) {
+        console.log('First match date debug:', {
+          raw: matchesWithAdjustedDates[0].match_date,
+          adjusted: matchesWithAdjustedDates[0].paraguay_date,
+          rawString: new Date(matchesWithAdjustedDates[0].match_date).toLocaleString('es-PY'),
+          adjustedString: matchesWithAdjustedDates[0].paraguay_date.toLocaleString('es-PY')
+        })
+      }
+      
+      setMatches(matchesWithAdjustedDates)
       
     } catch (err) {
       setError(err.message)
@@ -75,8 +99,8 @@ export const useMatches = () => {
     tomorrow.setDate(tomorrow.getDate() + 1)
     
     return matches.filter(match => {
-      if (!match.match_date) return false
-      const matchDate = new Date(match.match_date)
+      if (!match.paraguay_date) return false
+      const matchDate = new Date(match.paraguay_date)
       return matchDate >= today && matchDate < tomorrow
     })
   }

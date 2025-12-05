@@ -15,17 +15,22 @@ const MatchItem = ({ match }) => {
 
   const matchDate = new Date(match.match_date)
   
-  // Formato responsivo para fecha y hora
+  // Formato responsivo para fecha
   const formattedDate = matchDate.toLocaleDateString('es-ES', {
     weekday: 'short',
     day: 'numeric',
     month: 'short'
   })
   
-  const formattedTime = matchDate.toLocaleTimeString('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+  // Función para formatear tiempo sin segundos
+  const formatTime = (timeString) => {
+    if (!timeString) return '--:--'
+    // timeString viene como "21:30:00" o "22:00:00"
+    return timeString.substring(0, 5) // Toma solo "21:30" o "22:00"
+  }
+  
+  // Usar match_time en lugar de toLocaleTimeString
+  const formattedTime = match.match_time ? formatTime(match.match_time) : '--:--'
 
   const isWinner = (teamId) => {
     if (match.status !== 'finished') return null
@@ -69,13 +74,11 @@ const MatchItem = ({ match }) => {
         <div className="text-xs sm:text-sm text-gray-500 flex flex-col items-center space-y-1">
           {match.location && (
             <div className="inline-flex items-center">
-             
               <span className="truncate">{match.location}</span>
             </div>
           )}
           {match.tournament && (
             <div className="inline-flex items-center ml-0 sm:ml-2">
-            
               <span className="truncate">{match.tournament.name}</span>
             </div>
           )}
@@ -85,7 +88,6 @@ const MatchItem = ({ match }) => {
 
       <div className="flex items-center justify-between mb-4">
         
-      
         <div className="flex items-center flex-1">
           
           <div className="flex-shrink-0 mr-2 sm:mr-4">
@@ -127,7 +129,7 @@ const MatchItem = ({ match }) => {
         <div className="flex items-center flex-1 justify-end">
         
           <div className="text-left flex-1 min-w-0 mr-2 sm:mr-4">
-            <div className={`text-sm  sm:text-base font-semibold truncate ${
+            <div className={`text-sm sm:text-base font-semibold truncate ${
               isWinner(match.away_team_id) ? 'text-green-600' : 'text-gray-800'
             }`}>
               {awayTeam.short_name || awayTeam.name}
@@ -217,7 +219,7 @@ const MatchItem = ({ match }) => {
         <div className="border-t border-gray-200 pt-3 sm:pt-4 mt-4 sm:mt-6">
           <div className="text-center text-sm sm:text-base text-gray-600 space-y-1">
             {match.match_time && (
-              <div>Hora: {match.match_time}</div>
+              <div>Hora: {formatTime(match.match_time)}</div>
             )}
             <div className="flex flex-wrap justify-center gap-2">
               {match.round_number && (

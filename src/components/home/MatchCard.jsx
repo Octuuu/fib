@@ -20,10 +20,15 @@ const MatchCard = ({ match }) => {
     month: 'long'
   })
   
-  const formattedTime = matchDate.toLocaleTimeString('es-ES', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+  // Función para formatear tiempo sin segundos
+  const formatTime = (timeString) => {
+    if (!timeString) return '--:--'
+    // timeString viene como "21:30:00" o "22:00:00"
+    return timeString.substring(0, 5) // Toma solo "21:30" o "22:00"
+  }
+  
+  // Usar match_time en lugar de toLocaleTimeString
+  const formattedTime = match.match_time ? formatTime(match.match_time) : '--:--'
 
   return (
     <div className="bg-white rounded-xl shadow-md transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
