@@ -1,6 +1,11 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 const MatchItem = ({ match }) => {
+  const [imageError, setImageError] = useState({
+    home: false,
+    away: false
+  })
+
   const homeTeam = match.home_team
   const awayTeam = match.away_team
 
@@ -9,12 +14,14 @@ const MatchItem = ({ match }) => {
   }
 
   const matchDate = new Date(match.match_date)
+  
+  // Formato responsivo para fecha y hora
   const formattedDate = matchDate.toLocaleDateString('es-ES', {
-    weekday: 'long',
+    weekday: 'short',
     day: 'numeric',
-    month: 'long',
-    year: 'numeric'
+    month: 'short'
   })
+  
   const formattedTime = matchDate.toLocaleTimeString('es-ES', {
     hour: '2-digit',
     minute: '2-digit'
@@ -31,120 +38,146 @@ const MatchItem = ({ match }) => {
       case 'finished':
         return { text: 'FINAL', color: 'bg-red-100 text-red-800' }
       case 'scheduled':
-        return { text: 'PROGRAMADO', color: 'bg-blue-100 text-blue-800' }
+        return { text: 'PROG.', color: 'bg-blue-100 text-blue-800' }
       case 'ongoing':
         return { text: 'EN JUEGO', color: 'bg-green-100 text-green-800' }
       case 'postponed':
-        return { text: 'APLAZADO', color: 'bg-yellow-100 text-yellow-800' }
+        return { text: 'APLAZ.', color: 'bg-yellow-100 text-yellow-800' }
       case 'cancelled':
-        return { text: 'CANCELADO', color: 'bg-gray-100 text-gray-800' }
+        return { text: 'CANC.', color: 'bg-gray-100 text-gray-800' }
       default:
-        return { text: 'PENDIENTE', color: 'bg-gray-100 text-gray-800' }
+        return { text: 'PEND.', color: 'bg-gray-100 text-gray-800' }
     }
   }
 
   const statusBadge = getStatusBadge()
 
   return (
-    <div className="bg-white rounded-lg shadow-md transition duration-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm sm:shadow-md transition duration-200 p-4 sm:p-6">
       
-      <div className="text-center mb-6">
-        <div className="text-lg font-semibold text-gray-800 capitalize">
-          {formattedDate}
+      <div className="text-center mb-4 sm:mb-6">
+        <div className="flex flex-col sm:flex-row justify-center items-center gap-1 sm:gap-2 mb-2">
+          <div className="text-base sm:text-lg font-semibold text-gray-800 capitalize">
+            {formattedDate}
+          </div>
+          <div className="hidden sm:block text-gray-400">•</div>
+          <div className="text-gray-600">
+            <span className="font-medium">{formattedTime}</span>
+          </div>
         </div>
-        <div className="text-gray-600 mt-1">
-          <span className="font-medium">{formattedTime}</span> 
-          {match.location && ` • ${match.location}`}
-          {match.tournament && ` • ${match.tournament.name}`}
+        
+        <div className="text-xs sm:text-sm text-gray-500 flex flex-col items-center space-y-1">
+          {match.location && (
+            <div className="inline-flex items-center">
+             
+              <span className="truncate">{match.location}</span>
+            </div>
+          )}
+          {match.tournament && (
+            <div className="inline-flex items-center ml-0 sm:ml-2">
+            
+              <span className="truncate">{match.tournament.name}</span>
+            </div>
+          )}
         </div>
       </div>
+
 
       <div className="flex items-center justify-between mb-4">
         
-        <div className="flex items-center space-x-4 flex-1">
+      
+        <div className="flex items-center flex-1">
           
-          <div className="flex-shrink-0">
-            {homeTeam.logo_url ? (
+          <div className="flex-shrink-0 mr-2 sm:mr-4">
+            {homeTeam.logo_url && !imageError.home ? (
               <img 
                 src={homeTeam.logo_url} 
                 alt={homeTeam.name}
-                className="w-16 h-16 object-contain"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='%23e5e7eb'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' font-size='24' fill='%239ca3af'%3E🏀%3C/text%3E%3C/svg%3E";
-                }}
+                className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain"
+                onError={() => setImageError(prev => ({...prev, home: true}))}
               />
             ) : (
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                <span className="text-2xl"></span>
+              <div className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                <span className="text-lg sm:text-xl"></span>
               </div>
             )}
           </div>
           
-          {/* Nombre y puntaje del equipo local */}
-          <div className="text-right flex-1">
-            <div className={`text-lg font-semibold ${isWinner(match.home_team_id) ? 'text-green-600' : 'text-gray-800'}`}>
+          <div className="text-right flex-1 min-w-0">
+            <div className={`text-sm sm:text-base font-semibold truncate ${
+              isWinner(match.home_team_id) ? 'text-green-600' : 'text-gray-800'
+            }`}>
               {homeTeam.short_name || homeTeam.name}
             </div>
             {match.home_score !== null && (
-              <div className="text-3xl font-bold mt-1">{match.home_score}</div>
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold mt-1">{match.home_score}</div>
             )}
-            <div className="text-sm text-gray-500 mt-1">
-              {homeTeam.name !== homeTeam.short_name && homeTeam.short_name ? homeTeam.name : ''}
-            </div>
           </div>
         </div>
 
-        {/* Separador y estado */}
-        <div className="mx-6 flex flex-col items-center">
-          <div className={`${statusBadge.color} px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide mb-2`}>
+        
+        <div className="mx-2 sm:mx-4 md:mx-6 flex flex-col items-center min-w-[60px] sm:min-w-[80px]">
+          <div className={`${statusBadge.color} px-2 py-1 rounded-full text-xs font-semibold uppercase tracking-wide mb-1 sm:mb-2 whitespace-nowrap`}>
             {statusBadge.text}
           </div>
-          <div className="text-gray-400 font-bold text-lg">VS</div>
+          <div className="text-gray-400 font-bold text-base sm:text-lg">VS</div>
         </div>
 
-        {/* Equipo visitante */}
-        <div className="flex items-center space-x-4 flex-1">
-          {/* Nombre y puntaje del equipo visitante */}
-          <div className="text-left flex-1">
-            <div className={`text-lg font-semibold ${isWinner(match.away_team_id) ? 'text-green-600' : 'text-gray-800'}`}>
+  
+        <div className="flex items-center flex-1 justify-end">
+        
+          <div className="text-left flex-1 min-w-0 mr-2 sm:mr-4">
+            <div className={`text-sm  sm:text-base font-semibold truncate ${
+              isWinner(match.away_team_id) ? 'text-green-600' : 'text-gray-800'
+            }`}>
               {awayTeam.short_name || awayTeam.name}
             </div>
             {match.away_score !== null && (
-              <div className="text-3xl font-bold mt-1">{match.away_score}</div>
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold mt-1">{match.away_score}</div>
             )}
-            <div className="text-sm text-gray-500 mt-1">
-              {awayTeam.name !== awayTeam.short_name && awayTeam.short_name ? awayTeam.name : ''}
-            </div>
           </div>
           
-          {/* Logo del equipo visitante */}
+  
           <div className="flex-shrink-0">
-            {awayTeam.logo_url ? (
+            {awayTeam.logo_url && !imageError.away ? (
               <img 
                 src={awayTeam.logo_url} 
                 alt={awayTeam.name}
-                className="w-16 h-16 object-contain"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='40' fill='%23e5e7eb'/%3E%3Ctext x='50' y='50' text-anchor='middle' dy='.3em' font-size='24' fill='%239ca3af'%3E🏀%3C/text%3E%3C/svg%3E";
-                }}
+                className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 object-contain"
+                onError={() => setImageError(prev => ({...prev, away: true}))}
               />
             ) : (
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center">
-                <span className="text-2xl"></span>
+              <div className="w-10 h-10 sm:w-14 sm:h-14 md:w-16 md:h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                <span className="text-lg sm:text-xl"></span>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Información adicional */}
+      <div className="sm:hidden grid grid-cols-2 gap-2 text-xs text-gray-500 mt-2 border-t pt-2">
+        <div className="truncate pr-2">
+          {homeTeam.name !== homeTeam.short_name && homeTeam.short_name ? homeTeam.name : ''}
+        </div>
+        <div className="truncate pl-14">
+          {awayTeam.name !== awayTeam.short_name && awayTeam.short_name ? awayTeam.name : ''}
+        </div>
+      </div>
+
+      <div className="hidden sm:grid grid-cols-2 gap-4 text-sm text-gray-500 mt-2">
+        <div className="truncate text-right pr-4">
+          {homeTeam.name !== homeTeam.short_name && homeTeam.short_name ? homeTeam.name : ''}
+        </div>
+        <div className="truncate pl-4">
+          {awayTeam.name !== awayTeam.short_name && awayTeam.short_name ? awayTeam.name : ''}
+        </div>
+      </div>
+
       {match.status === 'finished' && (
-        <div className="border-t border-gray-200 pt-4 mt-6">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            {/* Resultado final */}
-            <div className="text-gray-700">
+        <div className="border-t border-gray-200 pt-3 sm:pt-4 mt-4 sm:mt-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4">
+        
+            <div className="text-sm sm:text-base text-gray-700">
               <span className="font-medium">Resultado: </span>
               {match.home_score > match.away_score ? (
                 <span className="font-semibold text-green-600">{homeTeam.short_name || homeTeam.name} gana</span>
@@ -155,51 +188,59 @@ const MatchItem = ({ match }) => {
               )}
             </div>
             
-            {/* Diferencia de puntos */}
+          
             {match.home_score !== null && match.away_score !== null && (
-              <div className="text-gray-700">
+              <div className="text-sm sm:text-base text-gray-700">
                 <span className="font-medium">Diferencia: </span>
                 <span className={`font-semibold ${Math.abs(match.home_score - match.away_score) >= 10 ? 'text-red-600' : 'text-blue-600'}`}>
                   {Math.abs(match.home_score - match.away_score)} pts
                 </span>
               </div>
             )}
-            
-            {/* MVP */}
-            {match.mvp && match.mvp.length > 0 && (
-              <div className="text-right">
-                <div className="text-gray-600 text-sm">MVP:</div>
-                <div className="font-semibold">
-                  #{match.mvp[0].jersey_number} {match.mvp[0].first_name} {match.mvp[0].last_name}
-                </div>
-              </div>
-            )}
           </div>
+          
+        
+          {match.mvp && match.mvp.length > 0 && (
+            <div className="mt-3 sm:mt-4 pt-3 border-t border-gray-100">
+              <div className="text-sm sm:text-base">
+                <span className="font-medium text-gray-600">MVP:</span>
+                <span className="ml-2 font-semibold">
+                  #{match.mvp[0].jersey_number} {match.mvp[0].first_name} {match.mvp[0].last_name}
+                </span>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {match.status === 'scheduled' && (
-        <div className="border-t border-gray-200 pt-4 mt-6">
-          <div className="text-center text-gray-600">
-            {match.match_time ? `Hora: ${match.match_time}` : 'Hora por confirmar'}
-            {match.round_number && ` • Jornada ${match.round_number}`}
-            {match.phase && match.phase !== 'group' && ` • Fase: ${match.phase}`}
+        <div className="border-t border-gray-200 pt-3 sm:pt-4 mt-4 sm:mt-6">
+          <div className="text-center text-sm sm:text-base text-gray-600 space-y-1">
+            {match.match_time && (
+              <div>Hora: {match.match_time}</div>
+            )}
+            <div className="flex flex-wrap justify-center gap-2">
+              {match.round_number && (
+                <span>Jornada {match.round_number}</span>
+              )}
+              {match.phase && match.phase !== 'group' && (
+                <span>• Fase: {match.phase}</span>
+              )}
+            </div>
           </div>
         </div>
       )}
 
-      {/* Información de playoffs */}
       {match.is_playoff && (
         <div className="border-t border-gray-200 pt-3 mt-4">
           <div className="text-center">
-            <span className="inline-flex items-center px-3 py-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-full text-xs font-bold uppercase">
-              PLAYOFF • Ronda {match.playoff_round || 1}
+            <span className="inline-flex items-center px-2 py-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-full text-xs font-bold uppercase">
+              PLAYOFF
             </span>
-            {match.playoff_game && match.playoff_game > 1 && (
-              <span className="ml-2 text-sm text-gray-600">
-                (Juego {match.playoff_game})
-              </span>
-            )}
+            <div className="text-xs sm:text-sm text-gray-600 mt-1">
+              {match.playoff_round && `Ronda ${match.playoff_round}`}
+              {match.playoff_game && match.playoff_game > 1 && ` • Juego ${match.playoff_game}`}
+            </div>
           </div>
         </div>
       )}

@@ -26,7 +26,7 @@ const MatchCard = ({ match }) => {
   })
 
   return (
-    <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
+    <div className="bg-white rounded-xl shadow-md transition-all duration-300 overflow-hidden border border-gray-100 flex flex-col h-full">
       
       <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -50,7 +50,7 @@ const MatchCard = ({ match }) => {
       <div className="p-6 flex-grow">
         
         <div className="flex items-center justify-between gap-3 lg:gap-4">
-          {/* Equipo local */}
+         
           <div className="flex flex-col items-center text-center flex-1 min-w-0">
             <div className="mb-3">
               {homeTeam.logo_url ? (
@@ -74,8 +74,6 @@ const MatchCard = ({ match }) => {
               </div>
             </div>
           </div>
-
-          {/* VS y marcador */}
           <div className="flex flex-col items-center mx-2 lg:mx-4">
             <div className="text-2xl lg:text-3xl font-bold text-gray-400 mb-2">VS</div>
             {match.status === 'finished' ? (
@@ -91,7 +89,6 @@ const MatchCard = ({ match }) => {
             )}
           </div>
 
-          {/* Equipo visitante */}
           <div className="flex flex-col items-center text-center flex-1 min-w-0">
             <div className="mb-3">
               {awayTeam.logo_url ? (
@@ -102,7 +99,7 @@ const MatchCard = ({ match }) => {
                 />
               ) : (
                 <div className="w-16 h-16 lg:w-20 lg:h-20 flex items-center justify-center bg-gradient-to-br from-red-50 to-gray-100 rounded-full mx-auto">
-                  <span className="text-3xl">🏀</span>
+                  <span className="text-3xl"></span>
                 </div>
               )}
             </div>
@@ -117,7 +114,6 @@ const MatchCard = ({ match }) => {
           </div>
         </div>
 
-        {/* MVP (solo para partidos terminados) */}
         {match.status === 'finished' && match.mvp && (
           <div className="mt-6 p-3 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-lg border border-orange-100">
             <div className="flex items-center justify-center gap-3">
@@ -134,7 +130,7 @@ const MatchCard = ({ match }) => {
         )}
       </div>
       
-      {/* Footer con botón */}
+    
       <div className="p-4 border-t border-gray-100 bg-gray-50">
         {match.status === 'finished' ? (
           <button 

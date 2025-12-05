@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 export default function Navigation({ currentPath }) {
   const navItems = [
     { path: "/", label: "Inicio", icon: "🏠" },
-    { path: "/equipos", label: "Equipos", icon: "👥" },
-    { path: "/calendario", label: "Calendario", icon: "📅" },
-    { path: "/conocenos", label: "Conócenos", icon: "ℹ️" },
+    { path: "/equipos", label: "Equipos", icon: "" },
+    { path: "/calendario", label: "Calendario", icon: "" },
+    { path: "/conocenos", label: "Conócenos", icon: "" },
     { path: "/escuela", label: "Escuela", icon: "🎓" },
   ];
 
@@ -18,8 +18,8 @@ export default function Navigation({ currentPath }) {
           to={item.path}
           className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-300 ${
             currentPath === item.path
-              ? "bg-white text-primary font-semibold shadow-md"
-              : "text-white hover:bg-blue-700 hover:text-white hover:shadow-sm"
+              ? "bg-white  font-semibold shadow-md"
+              : "text-whit hover:shadow-sm"
           }`}
         >
           <span className="text-lg">{item.icon}</span>

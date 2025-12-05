@@ -59,7 +59,7 @@ const StandingsTable = () => {
         team_city: standing.team?.city || '',
         team_logo: standing.team?.logo_url,
         team_short_name: standing.team?.short_name || standing.team?.name?.substring(0, 3).toUpperCase(),
-        // Asegurar valores por defecto
+      
         games_played: standing.games_played || 0,
         wins: standing.wins || 0,
         losses: standing.losses || 0,
@@ -82,7 +82,6 @@ const StandingsTable = () => {
         </h2>
         
       </div>
-
 
       <div className="bg-white overflow-hidden border border-gray-200">
         <div className="overflow-x-auto">
@@ -128,7 +127,7 @@ const StandingsTable = () => {
                       </div>
                     </td>
 
-                    {/* Equipo */}
+              
                     <td className="py-4 px-4">
                       <div className="flex items-center space-x-3">
                         <div className="flex-shrink-0">

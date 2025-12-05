@@ -377,7 +377,7 @@ const MatchDetails = () => {
 
   if (!match) {
     return (
-      <div className="min-h-screen bg-gray-50 pt-20">
+      <div className="min-h-screen pt-20">
         <div className="max-w-6xl mx-auto px-4 text-center py-16">
           <div className="text-6xl mb-4">❌</div>
           <h2 className="text-2xl font-bold text-gray-800 mb-4">Partido no encontrado</h2>
@@ -402,8 +402,8 @@ const MatchDetails = () => {
   const awayPlayers = getPlayersByTeam(match.away_team_id)
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
-      {/* Header */}
+    <div className="min-h-screen  pt-20">
+  
       <div className="max-w-6xl mx-auto px-4">
         <button
           onClick={() => navigate(-1)}
@@ -413,7 +413,7 @@ const MatchDetails = () => {
           Volver atrás
         </button>
 
-        {/* Información del partido */}
+    
         <div className="bg-white rounded-xl shadow-md p-6 mb-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
             <div>
@@ -454,65 +454,72 @@ const MatchDetails = () => {
             </div>
           </div>
 
-          {/* Marcador */}
-          <div className="bg-gradient-to-r from-blue-50 to-gray-50 rounded-lg p-8 mb-6">
-            <div className="flex items-center justify-center">
-              {/* Equipo local */}
-              <div className="flex-1 text-right">
-                <div className="text-2xl font-bold">{homeTeam?.name || 'Local'}</div>
-                {homeTeam?.logo_url ? (
-                  <img 
-                    src={homeTeam.logo_url} 
-                    alt={homeTeam.name}
-                    className="w-20 h-20 object-contain mx-auto my-4"
-                  />
-                ) : (
-                  <div className="w-20 h-20 flex items-center justify-center bg-gray-100 rounded-full mx-auto my-4">
-                    <span className="text-3xl">🏀</span>
-                  </div>
-                )}
-              </div>
+          <div className="bg-gradient-to-r from-blue-50 to-gray-50 rounded-lg p-4 sm:p-6 md:p-8 mb-6">
+  <div className="flex items-center justify-between gap-3 sm:gap-4 md:gap-6">
+    
+    {/* Equipo local */}
+    <div className="flex flex-col items-center flex-1 text-center">
+      <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold truncate w-full">
+        {homeTeam?.short_name || homeTeam?.name || 'Local'}
+      </div>
+      {homeTeam?.logo_url ? (
+        <img 
+          src={homeTeam.logo_url} 
+          alt={homeTeam.name}
+          className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain my-3"
+        />
+      ) : (
+        <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 flex items-center justify-center bg-gray-100 rounded-full my-3">
+          <span className="text-2xl sm:text-3xl">🏀</span>
+        </div>
+      )}
+    </div>
 
-              {/* Marcador */}
-              <div className="mx-8">
-                <div className="text-6xl font-bold">
-                  {match.home_score || 0} - {match.away_score || 0}
-                </div>
-                <div className="text-center mt-2 text-gray-500">
-                  {match.status === 'finished' ? 'FINAL' : 'POR JUGAR'}
-                </div>
-              </div>
+    {/* Marcador */}
+    <div className="flex flex-col items-center mx-2 sm:mx-4">
+      <div className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold">
+        {match.home_score || 0} - {match.away_score || 0}
+      </div>
+      <div className="text-xs sm:text-sm md:text-base text-gray-500 mt-1">
+        {match.status === 'finished' ? 'FINAL' : 'POR JUGAR'}
+      </div>
+    </div>
 
-              {/* Equipo visitante */}
-              <div className="flex-1">
-                <div className="text-2xl font-bold">{awayTeam?.name || 'Visitante'}</div>
-                {awayTeam?.logo_url ? (
-                  <img 
-                    src={awayTeam.logo_url} 
-                    alt={awayTeam.name}
-                    className="w-20 h-20 object-contain mx-auto my-4"
-                  />
-                ) : (
-                  <div className="w-20 h-20 flex items-center justify-center bg-gray-100 rounded-full mx-auto my-4">
-                    <span className="text-3xl">🏀</span>
-                  </div>
-                )}
-              </div>
-            </div>
+    {/* Equipo visitante */}
+    <div className="flex flex-col items-center flex-1 text-center">
+      <div className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold truncate w-full">
+        {awayTeam?.short_name || awayTeam?.name || 'Visitante'}
+      </div>
+      {awayTeam?.logo_url ? (
+        <img 
+          src={awayTeam.logo_url} 
+          alt={awayTeam.name}
+          className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain my-3"
+        />
+      ) : (
+        <div className="w-14 h-14 sm:w-16 sm:h-16 md:w-20 md:h-20 flex items-center justify-center bg-gray-100 rounded-full my-3">
+          <span className="text-2xl sm:text-3xl">🏀</span>
+        </div>
+      )}
+    </div>
+  </div>
 
-            {/* MVP */}
-            {match.mvp_player && (
-              <div className="mt-6 text-center">
-                <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-100 to-yellow-100 px-6 py-3 rounded-full">
-                  <Trophy className="text-orange-500" size={20} />
-                  <span className="font-semibold text-gray-800">
-                    MVP: {match.mvp_player.first_name} {match.mvp_player.last_name}
-                    {match.mvp_player.jersey_number && ` #${match.mvp_player.jersey_number}`}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
+  {/* MVP */}
+  {match.mvp_player && (
+    <div className="mt-4 sm:mt-6 text-center">
+      <div className="inline-flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 bg-gradient-to-r from-orange-100 to-yellow-100 px-3 sm:px-4 py-2 sm:py-3 rounded-full w-full max-w-md mx-auto">
+        <div className="flex items-center gap-1">
+          <Trophy className="text-orange-500" size={14} sm:size={16} />
+          <span className="font-semibold text-gray-800 text-xs sm:text-sm">MVP:</span>
+        </div>
+        <span className="text-xs sm:text-sm font-semibold text-gray-800 truncate">
+          {match.mvp_player.first_name} {match.mvp_player.last_name}
+          {match.mvp_player.jersey_number && ` #${match.mvp_player.jersey_number}`}
+        </span>
+      </div>
+    </div>
+  )}
+</div>
 
           {/* Alerta si no hay estadísticas */}
           {match.status === 'finished' && !hasStatsData && (
@@ -574,7 +581,7 @@ const MatchDetails = () => {
             <div className="space-y-6">
               {/* Resumen de estadísticas */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-lg">
+                <div className="bg-gradient-to-br p-6 rounded-lg">
                   <div className="flex items-center gap-3 mb-4">
                     <Target className="text-blue-600" size={24} />
                     <h3 className="text-lg font-semibold">Puntos</h3>
@@ -591,7 +598,7 @@ const MatchDetails = () => {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-green-50 to-green-100 p-6 rounded-lg">
+                <div className="bg-gradient-to-br p-6 rounded-lg">
                   <div className="flex items-center gap-3 mb-4">
                     <Shield className="text-green-600" size={24} />
                     <h3 className="text-lg font-semibold">Rebotes</h3>
@@ -613,7 +620,7 @@ const MatchDetails = () => {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-lg">
+                <div className="bg-gradient-to-br p-6 rounded-lg">
                   <div className="flex items-center gap-3 mb-4">
                     <Users className="text-purple-600" size={24} />
                     <h3 className="text-lg font-semibold">Asistencias</h3>
@@ -630,7 +637,7 @@ const MatchDetails = () => {
                   </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-lg">
+                <div className="bg-gradient-to-br p-6 rounded-lg">
                   <div className="flex items-center gap-3 mb-4">
                     <Zap className="text-red-600" size={24} />
                     <h3 className="text-lg font-semibold">Defensa</h3>

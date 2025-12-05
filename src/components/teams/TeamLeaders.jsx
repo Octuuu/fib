@@ -10,37 +10,36 @@ import {
 } from 'react-icons/fa'
 
 const TeamLeaders = ({ players }) => {
- 
   const leaders = [
     { 
       stat: 'points', 
       label: 'Puntos', 
-      icon: <FaBasketballBall className="text-orange-500" />,
+      
     },
     { 
       stat: 'assists', 
       label: 'Asistencias', 
-      icon: <FaAssistiveListeningSystems className="text-blue-500" />
+      
     },
     { 
       stat: 'rebounds', 
       label: 'Rebotes', 
-      icon: <FaChartBar className="text-green-500" />
+     
     },
     { 
       stat: 'steals', 
       label: 'Robos', 
-      icon: <FaBolt className="text-purple-500" />
+      
     },
     { 
       stat: 'blocks', 
       label: 'Tapones', 
-      icon: <FaShieldAlt className="text-red-500" />
+      
     },
     { 
       stat: 'efficiency', 
       label: 'Eficiencia', 
-      icon: <FaBullseye className="text-indigo-500" />
+      
     }
   ]
 
@@ -54,7 +53,7 @@ const TeamLeaders = ({ players }) => {
         {leaders.map((leader) => (
           <div 
             key={leader.stat} 
-            className={`border rounded-lg p-4 transition-all duration-300 ${leader.borderColor} bg-gradient-to-br ${leader.color}`}
+            className="border rounded-lg p-4 transition-all duration-300"
           >
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -62,31 +61,16 @@ const TeamLeaders = ({ players }) => {
                 <span className="font-semibold text-gray-700">{leader.label}</span>
               </div>
               <div className="text-xl font-bold text-gray-800">
-                {Math.floor(Math.random() * 100) + 50}
+                0
               </div>
             </div>
           
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-full flex items-center justify-center text-white font-bold">
-                #{
-                  players.length > 0 
-                    ? players[Math.floor(Math.random() * players.length)]?.jersey_number || '00'
-                    : '00'
-                }
+              <div className="w-10 h-10 bg-black rounded-full flex items-center justify-center text-white font-bold">
+                #00
               </div>
               <div className="min-w-0 flex-1">
-                {players.length > 0 ? (
-                  <>
-                    <div className="font-semibold text-gray-800 truncate">
-                      {players[0]?.first_name} {players[0]?.last_name}
-                    </div>
-                    <div className="text-sm text-gray-500 truncate">
-                      {players[0]?.player_position || 'Sin posición'}
-                    </div>
-                  </>
-                ) : (
-                  <div className="text-gray-500 text-sm">Sin datos</div>
-                )}
+                <div className="text-gray-500 text-sm">Sin datos</div>
               </div>
             </div>
           </div>

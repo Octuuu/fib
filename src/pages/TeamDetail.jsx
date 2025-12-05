@@ -69,44 +69,7 @@ const TeamDetail = () => {
           <div className="space-y-8">
             <TeamLeaders players={teamPlayers} />
             
-            {/* Información adicional del equipo */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h3 className="text-xl font-bold mb-4 text-gray-800">Información del Club</h3>
-              
-              <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Ciudad:</span>
-                  <span className="font-semibold">{team.city}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Fundación:</span>
-                  <span className="font-semibold">{team.founded_year}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Jugadores:</span>
-                  <span className="font-semibold">{teamPlayers.length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Temporadas:</span>
-                  <span className="font-semibold">8</span>
-                </div>
-              </div>
-              
-              {/* Colores del equipo */}
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <h4 className="font-semibold mb-3">Colores del Equipo</h4>
-                <div className="flex space-x-2">
-                  {team.colors?.map((color, index) => (
-                    <div
-                      key={index}
-                      className="w-8 h-8 rounded-full border border-gray-300"
-                      style={{ backgroundColor: color }}
-                      title={`Color ${index + 1}`}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
+            
           </div>
         </div>
       </div>

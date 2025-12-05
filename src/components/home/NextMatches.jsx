@@ -22,7 +22,6 @@ const NextMatches = ({ matches, loading }) => {
   return (
     <div className="max-w-6xl mx-auto">
       <h2 className="text-3xl font-bold text-center mb-2">Próximos Partidos</h2>
-      <p className="text-gray-600 text-center mb-8">No te pierdas los próximos encuentros</p>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {matches.map((match) => (
@@ -32,7 +31,7 @@ const NextMatches = ({ matches, loading }) => {
       
       {matches.length === 0 && (
         <div className="text-center py-12">
-          <div className="text-6xl mb-4">🏀</div>
+          <div className="text-6xl mb-4"></div>
           <h3 className="text-xl font-semibold text-gray-600">No hay partidos programados</h3>
           <p className="text-gray-500">Vuelve pronto para ver los próximos encuentros</p>
         </div>

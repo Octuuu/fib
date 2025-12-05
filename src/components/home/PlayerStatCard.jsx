@@ -8,7 +8,7 @@ const PlayerStatCard = ({ player, statType, statValue, totalValue, percentage, r
         return {
           title: 'Máximo Anotador',
           unit: 'PPG',
-          icon: '🔥',
+          icon: '',
           color: 'text-red-600',
           bgColor: 'bg-red-50',
           description: 'Puntos por partido'
@@ -17,7 +17,7 @@ const PlayerStatCard = ({ player, statType, statValue, totalValue, percentage, r
         return {
           title: 'Máximo Asistente',
           unit: 'APG',
-          icon: '🎯',
+          icon: '',
           color: 'text-blue-600',
           bgColor: 'bg-blue-50',
           description: 'Asistencias por partido'
@@ -26,7 +26,7 @@ const PlayerStatCard = ({ player, statType, statValue, totalValue, percentage, r
         return {
           title: 'Máximo Reboteador',
           unit: 'RPG',
-          icon: '💪',
+          icon: '',
           color: 'text-green-600',
           bgColor: 'bg-green-50',
           description: 'Rebotes por partido'
@@ -35,7 +35,7 @@ const PlayerStatCard = ({ player, statType, statValue, totalValue, percentage, r
         return {
           title: 'Máximo Triplista',
           unit: '3PM',
-          icon: '🎯',
+          icon: '',
           color: 'text-purple-600',
           bgColor: 'bg-purple-50',
           description: 'Triples anotados'
@@ -44,7 +44,7 @@ const PlayerStatCard = ({ player, statType, statValue, totalValue, percentage, r
         return {
           title: 'Figura Destacada',
           unit: '',
-          icon: '⭐',
+          icon: '',
           color: 'text-yellow-600',
           bgColor: 'bg-yellow-50',
           description: ''
@@ -59,7 +59,7 @@ const PlayerStatCard = ({ player, statType, statValue, totalValue, percentage, r
 
   return (
     <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
-      {/* Encabezado con rango */}
+     
       <div className="flex justify-between items-start mb-4">
         <div className={`w-8 h-8 ${config.bgColor} rounded-full flex items-center justify-center`}>
           <span className="font-bold text-lg">{rank}</span>
@@ -67,7 +67,6 @@ const PlayerStatCard = ({ player, statType, statValue, totalValue, percentage, r
         <div className="text-3xl">{config.icon}</div>
       </div>
 
-      {/* Información del jugador */}
       <div className="mb-4">
         <h3 className="font-bold text-lg text-gray-800">{config.title}</h3>
         <div className="flex items-center mt-2">
@@ -79,7 +78,7 @@ const PlayerStatCard = ({ player, statType, statValue, totalValue, percentage, r
             />
           ) : (
             <div className="w-12 h-12 bg-gray-200 rounded-full mr-3 flex items-center justify-center">
-              <span className="text-gray-500">🏀</span>
+              <span className="text-gray-500"></span>
             </div>
           )}
           <div>
@@ -97,7 +96,7 @@ const PlayerStatCard = ({ player, statType, statValue, totalValue, percentage, r
         </div>
       </div>
 
-      {/* Estadísticas */}
+     
       <div className={`${config.bgColor} rounded-lg p-4`}>
         <div className="flex items-baseline">
           <span className={`text-3xl font-bold ${config.color}`}>
@@ -108,7 +107,7 @@ const PlayerStatCard = ({ player, statType, statValue, totalValue, percentage, r
         
         <p className="text-sm text-gray-600 mt-1">{config.description}</p>
         
-        {/* Información adicional según tipo de estadística */}
+        
         {statType === 'threePoints' && percentage !== undefined && (
           <div className="mt-2 pt-2 border-t border-gray-200">
             <p className="text-sm text-gray-600">
@@ -126,7 +125,6 @@ const PlayerStatCard = ({ player, statType, statValue, totalValue, percentage, r
         )}
       </div>
 
-      {/* Información de partidos jugados */}
       {player?.gamesPlayed && (
         <div className="mt-4 text-sm text-gray-500 text-center">
           {player.gamesPlayed} partido{player.gamesPlayed !== 1 ? 's' : ''} jugado{player.gamesPlayed !== 1 ? 's' : ''}

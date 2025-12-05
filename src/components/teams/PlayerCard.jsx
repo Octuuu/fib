@@ -42,13 +42,13 @@ const PlayerCardHorizontal = ({ player }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 mb-3 hover:shadow-md transition-shadow duration-200">
       
-      {/* Primera fila - Información básica */}
+     
       <div className="flex items-center justify-between mb-2">
         {/* Nombre y equipo */}
         <div className="flex items-center gap-3 flex-1 min-w-0">
-          {/* Número/Foto */}
+         
           <div className="flex-shrink-0">
-            <div className="w-10 h-10 bg-gradient-to-br from-primary to-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-black rounded-lg flex items-center justify-center">
               {player.photo_url ? (
                 <img 
                   src={player.photo_url} 
@@ -86,48 +86,47 @@ const PlayerCardHorizontal = ({ player }) => {
 
         {/* Posición */}
         <div className="flex-shrink-0">
-          <span className={`px-3 py-1 ${positionColor} rounded-full text-xs font-medium`}>
+          <span className={`px-3 py-1 rounded-full text-xs font-medium`}>
             {player.player_position || 'N/A'}
           </span>
         </div>
       </div>
 
-      {/* Segunda fila - Estadísticas principales */}
+  
       <div className="grid grid-cols-4 gap-2 mb-2">
-        {/* Puntos */}
-        <div className="text-center bg-blue-50 rounded-lg p-1.5">
+    
+        <div className="text-center  rounded-lg p-1.5">
           <div className="flex items-center justify-center gap-1 mb-0.5">
-            <FaBasketballBall className="text-blue-600" size={12} />
+            
             <span className="text-sm font-bold text-gray-800">{stats.points}</span>
           </div>
           <div className="text-[10px] text-gray-600">Puntos</div>
           <div className="text-[10px] text-gray-500">{avgPoints} PPG</div>
         </div>
 
-        {/* Asistencias */}
-        <div className="text-center bg-green-50 rounded-lg p-1.5">
+  
+        <div className="text-center rounded-lg p-1.5">
           <div className="flex items-center justify-center gap-1 mb-0.5">
-            <FaAssistiveListeningSystems className="text-green-600" size={12} />
+            
             <span className="text-sm font-bold text-gray-800">{stats.assists}</span>
           </div>
           <div className="text-[10px] text-gray-600">Asist.</div>
           <div className="text-[10px] text-gray-500">{avgAssists} APG</div>
         </div>
 
-        {/* Rebotes */}
-        <div className="text-center bg-orange-50 rounded-lg p-1.5">
+      
+        <div className="text-center  rounded-lg p-1.5">
           <div className="flex items-center justify-center gap-1 mb-0.5">
-            <FaChartBar className="text-orange-600" size={12} />
+            
             <span className="text-sm font-bold text-gray-800">{stats.rebounds}</span>
           </div>
           <div className="text-[10px] text-gray-600">Rebotes</div>
           <div className="text-[10px] text-gray-500">{avgRebounds} RPG</div>
         </div>
 
-        {/* Partidos jugados */}
-        <div className="text-center bg-purple-50 rounded-lg p-1.5">
+        <div className="text-center rounded-lg p-1.5">
           <div className="flex items-center justify-center gap-1 mb-0.5">
-            <FaCaretRight className="text-purple-600" size={12} />
+           
             <span className="text-sm font-bold text-gray-800">{stats.games_played}</span>
           </div>
           <div className="text-[10px] text-gray-600">P.J.</div>
@@ -135,34 +134,33 @@ const PlayerCardHorizontal = ({ player }) => {
         </div>
       </div>
 
-      {/* Tercera fila - Estadísticas secundarias */}
+    
       <div className="grid grid-cols-3 gap-2">
-        {/* Robos */}
-        <div className="text-center bg-gray-50 rounded-lg p-1.5">
+        
+        <div className="text-center rounded-lg p-1.5">
           <div className="flex items-center justify-center gap-1 mb-0.5">
-            <FaBolt className="text-gray-600" size={10} />
+         
             <span className="text-xs font-bold text-gray-800">{stats.steals}</span>
           </div>
           <div className="text-[10px] text-gray-600">Robos</div>
         </div>
 
-        {/* Tapones */}
-        <div className="text-center bg-red-50 rounded-lg p-1.5">
+        <div className="text-center  rounded-lg p-1.5">
           <div className="flex items-center justify-center gap-1 mb-0.5">
-            <FaShieldAlt className="text-red-600" size={10} />
+            
             <span className="text-xs font-bold text-gray-800">{stats.blocks}</span>
           </div>
           <div className="text-[10px] text-gray-600">Tapones</div>
         </div>
 
-        {/* Estadísticas adicionales */}
-        <div className="text-center bg-gradient-to-r from-primary to-blue-600 rounded-lg p-1.5">
+       
+        <div className="text-center text-black rounded-lg p-1.5">
           <div className="flex items-center justify-center gap-1 mb-0.5">
-            <span className="text-xs font-bold text-white">
+            <span className="text-xs font-bold">
               {(parseFloat(avgPoints) + parseFloat(avgAssists) + parseFloat(avgRebounds)).toFixed(1)}
             </span>
           </div>
-          <div className="text-[10px] text-blue-100">Eficiencia</div>
+          <div className="text-[10px] ">Eficiencia</div>
         </div>
       </div>
     </div>
