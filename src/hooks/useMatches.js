@@ -6,11 +6,11 @@ export const useMatches = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Función para ajustar UTC a hora Paraguay (UTC-4)
+ 
   const adjustToParaguayTime = (dateString) => {
     if (!dateString) return null
     const date = new Date(dateString)
-    // Sumar 4 horas para convertir UTC a hora Paraguay
+    
     return new Date(date.getTime() + (4 * 60 * 60 * 1000))
   }
 
@@ -18,35 +18,27 @@ export const useMatches = () => {
     try {
       setLoading(true)
       
+     
       const { data, error } = await supabase
         .from('matches')
         .select(`
-          *,
-          home_team:home_team_id(name, short_name, logo_url, colors),
-          away_team:away_team_id(name, short_name, logo_url, colors),
-          mvp:mvp_player_id(first_name, last_name, jersey_number),
+          id, match_date, match_time, home_score, away_score, status, location,
+          home_team:home_team_id(name, short_name, logo_url),
+          away_team:away_team_id(name, short_name, logo_url),
+          mvp:mvp_player_id(first_name, last_name),
           tournament:tournaments(name)
         `)
         .order('match_date', { ascending: true })
+        .limit(100) 
 
       if (error) throw error
       
-      // Agregar fecha ajustada a Paraguay
       const matchesWithAdjustedDates = (data || []).map(match => ({
         ...match,
         paraguay_date: adjustToParaguayTime(match.match_date)
       }))
       
       console.log('Matches loaded successfully:', matchesWithAdjustedDates.length)
-      
-      if (matchesWithAdjustedDates.length > 0) {
-        console.log('First match date debug:', {
-          raw: matchesWithAdjustedDates[0].match_date,
-          adjusted: matchesWithAdjustedDates[0].paraguay_date,
-          rawString: new Date(matchesWithAdjustedDates[0].match_date).toLocaleString('es-PY'),
-          adjustedString: matchesWithAdjustedDates[0].paraguay_date.toLocaleString('es-PY')
-        })
-      }
       
       setMatches(matchesWithAdjustedDates)
       
@@ -63,33 +55,24 @@ export const useMatches = () => {
   }, [])
 
   const getNextMatches = () => {
-    const upcomingStatuses = ['scheduled', 'pending', 'confirmed', 'not_started']
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
     
     return matches
       .filter(match => {
-        const status = match.status?.toLowerCase()
-        const isUpcoming = upcomingStatuses.includes(status)
-        const hasNoScore = match.home_score === null && match.away_score === null
-        
-        return isUpcoming || hasNoScore
+        if (!match.paraguay_date) return false
+        const matchDate = new Date(match.paraguay_date)
+        return matchDate >= today && match.status !== 'finished'
       })
       .sort((a, b) => new Date(a.match_date) - new Date(b.match_date))
       .slice(0, 3)
   }
 
   const getRecentMatches = () => {
-    const finishedStatuses = ['finished', 'completed', 'played']
-    
     return matches
-      .filter(match => {
-        const status = match.status?.toLowerCase()
-        const isFinished = finishedStatuses.includes(status)
-        const hasScore = match.home_score !== null && match.away_score !== null
-        
-        return isFinished || hasScore
-      })
+      .filter(match => match.status === 'finished')
       .sort((a, b) => new Date(b.match_date) - new Date(a.match_date))
-      .slice(0, 5)
+      .slice(0, 5) 
   }
 
   const getTodayMatches = () => {
@@ -105,6 +88,31 @@ export const useMatches = () => {
     })
   }
 
+  const loadMoreMatches = async (page = 1, limit = 20) => {
+    try {
+      const from = (page - 1) * limit
+      const to = from + limit - 1
+      
+      const { data, error } = await supabase
+        .from('matches')
+        .select(`
+          id, match_date, match_time, home_score, away_score, status, location,
+          home_team:home_team_id(name, short_name),
+          away_team:away_team_id(name, short_name)
+        `)
+        .order('match_date', { ascending: true })
+        .range(from, to)
+
+      if (error) throw error
+      
+      return data || []
+      
+    } catch (err) {
+      console.error('Error loading more matches:', err)
+      return []
+    }
+  }
+
   return { 
     matches, 
     loading, 
@@ -112,6 +120,7 @@ export const useMatches = () => {
     getNextMatches, 
     getRecentMatches,
     getTodayMatches,
-    refetch: fetchMatches
+    refetch: fetchMatches,
+    loadMoreMatches
   }
 }

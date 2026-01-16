@@ -1,17 +1,42 @@
-import React from 'react';
-import fondoImg from '../../assets/fondo.png';
+import React, { useEffect, useState } from 'react';
+import fondoImg from '../../assets/fondo.webp';
 import { motion } from 'framer-motion';
 
 const HeroSection = () => {
+  const [vh, setVh] = useState('100vh');
+
+  useEffect(() => {
+    // Función para calcular el vh real considerando las barras del navegador
+    const setRealVh = () => {
+      // Primero intentamos con window.innerHeight que es más preciso
+      const realVh = window.innerHeight * 0.91;
+      setVh(`${realVh}px`);
+    };
+
+    // Ejecutar al montar
+    setRealVh();
+
+    // Recalcular en eventos de redimensionamiento
+    window.addEventListener('resize', setRealVh);
+    window.addEventListener('orientationchange', setRealVh);
+
+    return () => {
+      window.removeEventListener('resize', setRealVh);
+      window.removeEventListener('orientationchange', setRealVh);
+    };
+  }, []);
+
   return (
     <section 
-      className="relative text-white min-h-[91vh] flex items-end"
+      className="relative text-white flex items-end"
       style={{
         backgroundImage: `url(${fondoImg})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
         backgroundAttachment: 'fixed',
+        height: vh,
+        minHeight: vh,
       }}
     >
       <div 

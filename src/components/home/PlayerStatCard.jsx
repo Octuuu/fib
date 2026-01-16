@@ -1,135 +1,171 @@
 import React from 'react'
+import { FaBasketballBall, FaFire, FaAssistiveListeningSystems, FaBullseye } from 'react-icons/fa'
 
-const PlayerStatCard = ({ player, statType, statValue, totalValue, percentage, rank }) => {
-
+const PlayerStatCard = ({ 
+  player, 
+  statType, 
+  statValue, 
+  totalValue, 
+  percentage, 
+  rank, 
+  title,
+  icon: Icon = FaBasketballBall
+}) => {
+  
+  // Configurar según el tipo de estadística
   const getStatConfig = () => {
     switch(statType) {
       case 'points':
         return {
-          title: 'Máximo Anotador',
-          unit: 'PPG',
-          icon: '',
+          label: 'PPP',
+          unit: '',
+          icon: FaFire,
           color: 'text-red-600',
-          bgColor: 'bg-red-50',
           description: 'Puntos por partido'
         }
       case 'assists':
         return {
-          title: 'Máximo Asistente',
-          unit: 'APG',
-          icon: '',
+          label: 'APP',
+          unit: '',
+          icon: FaAssistiveListeningSystems,
           color: 'text-blue-600',
-          bgColor: 'bg-blue-50',
           description: 'Asistencias por partido'
         }
       case 'rebounds':
         return {
-          title: 'Máximo Reboteador',
-          unit: 'RPG',
-          icon: '',
+          label: 'RPP',
+          unit: '',
+          icon: FaBullseye,
           color: 'text-green-600',
-          bgColor: 'bg-green-50',
           description: 'Rebotes por partido'
         }
       case 'threePoints':
         return {
-          title: 'Máximo Triplista',
-          unit: '3PM',
-          icon: '',
+          label: 'Triples',
+          unit: '',
+          icon: FaBasketballBall,
           color: 'text-purple-600',
-          bgColor: 'bg-purple-50',
           description: 'Triples anotados'
         }
       default:
         return {
-          title: 'Figura Destacada',
+          label: 'Estadística',
           unit: '',
-          icon: '',
-          color: 'text-yellow-600',
-          bgColor: 'bg-yellow-50',
-          description: ''
+          icon: FaBasketballBall,
+          color: 'text-gray-600',
+          description: 'Estadística destacada'
         }
     }
   }
 
   const config = getStatConfig()
-  const playerName = player ? `${player.first_name} ${player.last_name}` : 'Sin datos'
-  const teamName = player?.team?.short_name || player?.team?.name || ''
-  const jerseyNumber = player?.jersey_number ? `#${player.jersey_number}` : ''
+  const fullName = `${player.first_name} ${player.last_name}`
+  
+  // Formatear valor de estadística
+  const formatStatValue = () => {
+    if (statType === 'threePoints') {
+      return `${statValue}${percentage ? ` (${percentage}%)` : ''}`
+    }
+    return statValue.toFixed(1)
+  }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow duration-300">
-     
-      <div className="flex justify-between items-start mb-4">
-        <div className={`w-8 h-8 ${config.bgColor} rounded-full flex items-center justify-center`}>
-          <span className="font-bold text-lg">{rank}</span>
+    <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
+      {/* Cabecera con ranking */}
+      <div className="bg-gray-50 p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-3">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${config.color} bg-gray-100 font-bold`}>
+              {rank}
+            </div>
+            <div>
+              <h3 className="text-base font-semibold text-gray-800">{title || config.description}</h3>
+              <p className="text-gray-600 text-xs">{config.label}</p>
+            </div>
+          </div>
+          <Icon className={`${config.color} text-xl`} />
         </div>
-        <div className="text-3xl">{config.icon}</div>
       </div>
 
-      <div className="mb-4">
-        <h3 className="font-bold text-lg text-gray-800">{config.title}</h3>
-        <div className="flex items-center mt-2">
-          {player?.photo_url ? (
+      {/* Contenido principal */}
+      <div className="p-4">
+        {/* Jugador */}
+        <div className="flex items-center gap-3 mb-4">
+          {player.avatar_url ? (
             <img 
-              src={player.photo_url} 
-              alt={playerName}
-              className="w-12 h-12 rounded-full mr-3 object-cover"
+              src={player.avatar_url} 
+              alt={fullName}
+              className="w-14 h-14 rounded-full border-2 border-gray-200 object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none'
+                e.target.parentElement.innerHTML = `
+                  <div class="w-14 h-14 rounded-full border-2 border-gray-200 bg-gray-100 flex items-center justify-center">
+                    <span class="text-gray-600 font-semibold text-lg">${player.first_name?.charAt(0)}${player.last_name?.charAt(0)}</span>
+                  </div>
+                `
+              }}
             />
           ) : (
-            <div className="w-12 h-12 bg-gray-200 rounded-full mr-3 flex items-center justify-center">
-              <span className="text-gray-500"></span>
+            <div className="w-14 h-14 rounded-full border-2 border-gray-200 bg-gray-100 flex items-center justify-center">
+              <span className="text-gray-600 font-semibold text-lg">
+                {player.first_name?.charAt(0)}{player.last_name?.charAt(0)}
+              </span>
             </div>
           )}
-          <div>
-            <p className="font-semibold text-gray-900">{playerName}</p>
-            <div className="flex items-center text-sm text-gray-600">
-              <span>{teamName}</span>
-              {jerseyNumber && (
-                <>
-                  <span className="mx-2">•</span>
-                  <span>{jerseyNumber}</span>
-                </>
+          
+          <div className="flex-1">
+            <h4 className="text-lg font-semibold text-gray-800">{fullName}</h4>
+            <div className="flex items-center gap-2 mt-1">
+              {player.team?.logo_url && (
+                <img 
+                  src={player.team.logo_url} 
+                  alt={player.team.name}
+                  className="w-4 h-4 object-contain"
+                />
               )}
+              <span className="text-gray-600 text-xs">
+                {player.team?.name || 'Sin equipo'}
+              </span>
             </div>
-          </div>
-        </div>
-      </div>
-
-     
-      <div className={`${config.bgColor} rounded-lg p-4`}>
-        <div className="flex items-baseline">
-          <span className={`text-3xl font-bold ${config.color}`}>
-            {statValue.toFixed(statType === 'threePoints' ? 0 : 1)}
-          </span>
-          <span className="ml-2 text-gray-600">{config.unit}</span>
-        </div>
-        
-        <p className="text-sm text-gray-600 mt-1">{config.description}</p>
-        
-        
-        {statType === 'threePoints' && percentage !== undefined && (
-          <div className="mt-2 pt-2 border-t border-gray-200">
-            <p className="text-sm text-gray-600">
-              Eficacia: <span className="font-semibold">{percentage}%</span>
+            <p className="text-gray-500 text-xs mt-1">
+              #{player.jersey_number || '?'} • {player.position || 'Jugador'}
             </p>
           </div>
-        )}
-        
-        {totalValue !== undefined && statType !== 'threePoints' && (
-          <div className="mt-2 pt-2 border-t border-gray-200">
-            <p className="text-sm text-gray-600">
-              Total: <span className="font-semibold">{totalValue}</span>
-            </p>
-          </div>
-        )}
-      </div>
-
-      {player?.gamesPlayed && (
-        <div className="mt-4 text-sm text-gray-500 text-center">
-          {player.gamesPlayed} partido{player.gamesPlayed !== 1 ? 's' : ''} jugado{player.gamesPlayed !== 1 ? 's' : ''}
         </div>
-      )}
+
+        {/* Estadística principal */}
+        <div className="bg-gray-50 rounded-md p-3 text-center mb-4 border border-gray-200">
+          <div className={`text-3xl font-bold ${config.color} mb-1`}>
+            {formatStatValue()}
+          </div>
+          <p className="text-gray-600 text-xs">
+            {config.description}
+            {statType !== 'threePoints' && ' por partido'}
+          </p>
+        </div>
+
+        {/* Estadísticas adicionales */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white rounded-md p-3 text-center border border-gray-200">
+            <div className="text-xs text-gray-500 mb-1">Partidos</div>
+            <div className="text-base font-semibold text-gray-800">{player.games_played || 0}</div>
+          </div>
+          
+          {totalValue !== undefined && (
+            <div className="bg-white rounded-md p-3 text-center border border-gray-200">
+              <div className="text-xs text-gray-500 mb-1">Total</div>
+              <div className="text-base font-semibold text-gray-800">{totalValue}</div>
+            </div>
+          )}
+        </div>
+
+        {/* Promedios adicionales */}
+        <div className="mt-3 pt-3 border-t border-gray-200">
+          <p className="text-xs text-gray-400 text-center">
+            {player.games_played || 0} partidos jugados
+          </p>
+        </div>
+      </div>
     </div>
   )
 }
