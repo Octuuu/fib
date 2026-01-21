@@ -6,158 +6,97 @@ export const usePlayers = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
-  // Función optimizada para obtener jugadores con estadísticas
   const fetchPlayersWithStats = useCallback(async (forceRefresh = false) => {
     try {
       setLoading(true)
       setError(null)
       
-      const cacheKey = 'players_cache'
-      const CACHE_TTL = 5 * 60 * 1000 // 5 minutos
+      const cacheKey = 'players_fast'
+      const CACHE_TTL = 15 * 60 * 1000
       
-      // Verificar caché
       if (!forceRefresh) {
         const cached = localStorage.getItem(cacheKey)
         if (cached) {
-          try {
-            const { data, timestamp } = JSON.parse(cached)
-            if (Date.now() - timestamp < CACHE_TTL) {
-              console.log('Using cached players:', data.length)
-              setPlayers(data || [])
-              setLoading(false)
-              return
-            }
-          } catch (cacheErr) {
-            console.warn('Error reading cache:', cacheErr)
+          const { data, timestamp } = JSON.parse(cached)
+          if (Date.now() - timestamp < CACHE_TTL) {
+            setPlayers(data || [])
+            setLoading(false)
+            return
           }
         }
       }
-      
-      console.log('Fetching players with stats...')
-      
-      // PRIMERO: Obtener todos los jugadores activos básicos
+
       const { data: playersData, error: playersError } = await supabase
         .from('players')
-        .select(`
-          id,
-          team_id,
-          first_name,
-          last_name,
-          player_position,
-          jersey_number,
-          height_cm,
-          weight_kg,
-          birth_date,
-          photo_url,
-          is_active,
-          biography,
-          team:teams(id, name, short_name, city, logo_url)
-        `)
+        .select('id, team_id, first_name, last_name, player_position, jersey_number, height_cm, weight_kg, birth_date, photo_url, biography, is_active')
         .eq('is_active', true)
         .order('first_name')
-        .limit(100)
+        .limit(80)
 
-      if (playersError) {
-        console.error('Error fetching players:', playersError)
-        throw new Error(`Error al cargar jugadores: ${playersError.message}`)
-      }
+      if (playersError) throw playersError
       
-      console.log('Basic players loaded:', playersData?.length || 0)
-      
-      if (!playersData || playersData.length === 0) {
+      if (!playersData?.length) {
         setPlayers([])
         setLoading(false)
         return
       }
-      
-      // SEGUNDO: Obtener estadísticas de todos los jugadores
+
+      const teamIds = [...new Set(playersData.map(p => p.team_id).filter(Boolean))]
+      const { data: teamsData } = await supabase
+        .from('teams')
+        .select('id, name, short_name, city, logo_url')
+        .in('id', teamIds)
+
+      const teamsMap = new Map()
+      teamsData?.forEach(team => teamsMap.set(team.id, team))
+
       const playerIds = playersData.map(p => p.id)
-      let statsByPlayer = {}
-      let gamesByPlayer = {}
+      const { data: statsData } = await supabase
+        .from('player_stats')
+        .select('player_id, points, rebounds, assists, three_points_made, three_points_attempted, match_id')
+        .in('player_id', playerIds)
+        .limit(1000)
+
+      const statsMap = new Map()
+      const gamesMap = new Map()
       
-      if (playerIds.length > 0) {
-        console.log('Fetching stats for', playerIds.length, 'players...')
+      if (statsData?.length) {
+        statsData.forEach(stat => {
+          const playerId = stat.player_id
+          
+          if (!statsMap.has(playerId)) {
+            statsMap.set(playerId, {
+              points: 0,
+              rebounds: 0,
+              assists: 0,
+              three_made: 0,
+              three_attempted: 0,
+              matchIds: new Set()
+            })
+          }
+          
+          const stats = statsMap.get(playerId)
+          stats.points += Number(stat.points) || 0
+          stats.rebounds += Number(stat.rebounds) || 0
+          stats.assists += Number(stat.assists) || 0
+          stats.three_made += Number(stat.three_points_made) || 0
+          stats.three_attempted += Number(stat.three_points_attempted) || 0
+          
+          if (stat.match_id) stats.matchIds.add(stat.match_id)
+        })
         
-        // Obtener estadísticas de la tabla player_stats
-        const { data: statsData, error: statsError } = await supabase
-          .from('player_stats')
-          .select('player_id, points, rebounds, assists, three_points_made, three_points_attempted, match_id')
-          .in('player_id', playerIds)
-          .limit(1000)
-        
-        if (statsError) {
-          console.warn('Error fetching player stats:', statsError)
-          // Continuar sin estadísticas
-        } else if (statsData && statsData.length > 0) {
-          console.log('Stats data found:', statsData.length, 'records')
-          
-          // Procesar estadísticas
-          statsData.forEach(stat => {
-            const playerId = stat.player_id
-            const matchId = stat.match_id
-            
-            if (!statsByPlayer[playerId]) {
-              statsByPlayer[playerId] = {
-                total_points: 0,
-                total_rebounds: 0,
-                total_assists: 0,
-                total_three_points_made: 0,
-                total_three_points_attempted: 0,
-                match_ids: new Set()
-              }
-            }
-            
-            // Sumar estadísticas
-            statsByPlayer[playerId].total_points += Number(stat.points) || 0
-            statsByPlayer[playerId].total_rebounds += Number(stat.rebounds) || 0
-            statsByPlayer[playerId].total_assists += Number(stat.assists) || 0
-            statsByPlayer[playerId].total_three_points_made += Number(stat.three_points_made) || 0
-            statsByPlayer[playerId].total_three_points_attempted += Number(stat.three_points_attempted) || 0
-            
-            // Añadir partido único
-            if (matchId) {
-              statsByPlayer[playerId].match_ids.add(matchId)
-            }
-          })
-          
-          // Contar partidos por jugador
-          Object.keys(statsByPlayer).forEach(playerId => {
-            gamesByPlayer[playerId] = statsByPlayer[playerId].match_ids.size
-          })
-          
-          console.log('Stats processed for', Object.keys(statsByPlayer).length, 'players')
-        } else {
-          console.log('No stats data found in player_stats table')
-        }
+        statsMap.forEach((stats, playerId) => {
+          gamesMap.set(playerId, stats.matchIds.size)
+        })
       }
-      
-      // TERCERO: Procesar y combinar datos
+
       const processedPlayers = playersData.map(player => {
-        const playerId = player.id
-        const playerStats = statsByPlayer[playerId] || {
-          total_points: 0,
-          total_rebounds: 0,
-          total_assists: 0,
-          total_three_points_made: 0,
-          total_three_points_attempted: 0
+        const playerStats = statsMap.get(player.id) || {
+          points: 0, rebounds: 0, assists: 0, three_made: 0, three_attempted: 0
         }
         
-        const gamesPlayed = gamesByPlayer[playerId] || 0
-        const totalPoints = playerStats.total_points || 0
-        const totalRebounds = playerStats.total_rebounds || 0
-        const totalAssists = playerStats.total_assists || 0
-        const totalThreePointsMade = playerStats.total_three_points_made || 0
-        const totalThreePointsAttempted = playerStats.total_three_points_attempted || 0
-        
-        // Calcular porcentaje de triples
-        const threePointPercentage = totalThreePointsAttempted > 0 
-          ? ((totalThreePointsMade / totalThreePointsAttempted) * 100).toFixed(1)
-          : '0.0'
-        
-        // Calcular promedios (con mínimo 1 partido)
-        const pointsPerGame = gamesPlayed > 0 ? (totalPoints / gamesPlayed).toFixed(1) : '0.0'
-        const reboundsPerGame = gamesPlayed > 0 ? (totalRebounds / gamesPlayed).toFixed(1) : '0.0'
-        const assistsPerGame = gamesPlayed > 0 ? (totalAssists / gamesPlayed).toFixed(1) : '0.0'
+        const gamesPlayed = gamesMap.get(player.id) || 0
+        const team = teamsMap.get(player.team_id)
         
         return {
           id: player.id,
@@ -172,216 +111,146 @@ export const usePlayers = () => {
           avatar_url: player.photo_url,
           biography: player.biography,
           is_active: player.is_active,
-          team: player.team || {
+          team: team ? {
+            id: team.id,
+            name: team.name || 'Sin equipo',
+            short_name: team.short_name || 'N/A',
+            city: team.city || '',
+            logo_url: team.logo_url
+          } : {
             id: player.team_id,
             name: 'Sin equipo',
             short_name: 'N/A',
             city: '',
             logo_url: null
           },
-          // Estadísticas totales
-          points: totalPoints,
-          rebounds: totalRebounds,
-          assists: totalAssists,
-          three_points_made: totalThreePointsMade,
-          three_points_attempted: totalThreePointsAttempted,
+          points: playerStats.points,
+          rebounds: playerStats.rebounds,
+          assists: playerStats.assists,
+          three_points_made: playerStats.three_made,
+          three_points_attempted: playerStats.three_attempted,
           games_played: gamesPlayed,
-          // Promedios
-          points_per_game: pointsPerGame,
-          rebounds_per_game: reboundsPerGame,
-          assists_per_game: assistsPerGame,
-          three_point_percentage: threePointPercentage
+          points_per_game: gamesPlayed > 0 ? (playerStats.points / gamesPlayed).toFixed(1) : '0.0',
+          rebounds_per_game: gamesPlayed > 0 ? (playerStats.rebounds / gamesPlayed).toFixed(1) : '0.0',
+          assists_per_game: gamesPlayed > 0 ? (playerStats.assists / gamesPlayed).toFixed(1) : '0.0',
+          three_point_percentage: playerStats.three_attempted > 0 
+            ? ((playerStats.three_made / playerStats.three_attempted) * 100).toFixed(1)
+            : '0.0'
         }
       })
-      
-      console.log('Processed players:', processedPlayers.length)
-      console.log('Players with games:', processedPlayers.filter(p => p.games_played > 0).length)
-      
-      // Guardar en caché
+
       try {
         localStorage.setItem(cacheKey, JSON.stringify({
           data: processedPlayers,
           timestamp: Date.now()
         }))
-      } catch (storageErr) {
-        console.warn('Error saving to localStorage:', storageErr)
-      }
+      } catch {}
       
       setPlayers(processedPlayers)
       
     } catch (err) {
-      const errorMessage = err.message || 'Error desconocido al cargar jugadores'
-      setError(errorMessage)
-      console.error('Error in fetchPlayersWithStats:', err)
+      setError(err.message || 'Error al cargar jugadores')
       
-      // Intentar usar caché en caso de error
       try {
-        const cached = localStorage.getItem('players_cache')
+        const cached = localStorage.getItem('players_fast')
         if (cached) {
           const { data } = JSON.parse(cached)
-          if (data && data.length > 0) {
-            setPlayers(data)
-          }
+          if (data?.length) setPlayers(data)
         }
-      } catch (cacheErr) {
-        console.log('No cache available or cache is corrupted')
-      }
+      } catch {}
     } finally {
       setLoading(false)
     }
   }, [])
 
-  // Función para obtener los mejores jugadores (REQUISITO CAMBIADO: mínimo 1 partido)
   const getTopPlayers = useCallback(() => {
-    try {
-      console.log('=== INICIANDO BÚSQUEDA DE MEJORES JUGADORES ===')
-      
-      // Filtrar jugadores con al menos 1 partido
-      const eligiblePlayers = players.filter(p => {
-        const gamesPlayed = parseInt(p.games_played) || 0
-        return gamesPlayed >= 1 // Cambiado de 3 a 1
-      })
-      
-      console.log('Jugadores elegibles (con 1+ partidos):', eligiblePlayers.length)
-      console.log('Todos los jugadores elegibles:', eligiblePlayers.map(p => ({
-        nombre: `${p.first_name} ${p.last_name}`,
-        partidos: p.games_played,
-        ppp: p.points_per_game,
-        app: p.assists_per_game,
-        rpp: p.rebounds_per_game,
-        triples: p.three_points_made
-      })))
-      
-      if (eligiblePlayers.length === 0) {
-        console.log('No hay jugadores con al menos 1 partido')
-        return []
-      }
-      
-      // Si hay menos de 4 jugadores, usar todos los que tengan estadísticas
-      const playersToUse = eligiblePlayers.length >= 4 ? eligiblePlayers : eligiblePlayers
-      
-      // Función para ordenar jugadores por estadística
-      const sortPlayers = (statKey, isString = false) => {
-        return [...playersToUse].sort((a, b) => {
-          let aValue, bValue
-          
-          if (isString) {
-            aValue = parseFloat(a[statKey]) || 0
-            bValue = parseFloat(b[statKey]) || 0
-          } else {
-            aValue = a[statKey] || 0
-            bValue = b[statKey] || 0
-          }
-          
-          return bValue - aValue
-        })
-      }
-      
-      // Ordenar por cada categoría
-      const topScorers = sortPlayers('points_per_game', true)
-      const topAssisters = sortPlayers('assists_per_game', true)
-      const topRebounders = sortPlayers('rebounds_per_game', true)
-      const topThreePointers = sortPlayers('three_points_made', false)
-      
-      console.log('Máximo anotador:', topScorers[0]?.first_name, topScorers[0]?.points_per_game)
-      console.log('Máximo asistente:', topAssisters[0]?.first_name, topAssisters[0]?.assists_per_game)
-      console.log('Máximo reboteador:', topRebounders[0]?.first_name, topRebounders[0]?.rebounds_per_game)
-      console.log('Máximo triplista:', topThreePointers[0]?.first_name, topThreePointers[0]?.three_points_made)
-      
-      // Seleccionar los mejores jugadores evitando duplicados
-      const bestPlayers = []
-      const usedIds = new Set()
-      
-      // 1. Máximo anotador
-      if (topScorers.length > 0 && parseFloat(topScorers[0].points_per_game) > 0) {
-        const player = topScorers[0]
-        bestPlayers.push(player)
-        usedIds.add(player.id)
-        console.log('✅ Seleccionado como máximo anotador:', player.first_name)
-      }
-      
-      // 2. Máximo asistente (diferente al anotador)
-      if (topAssisters.length > 0) {
-        const player = topAssisters.find(p => !usedIds.has(p.id)) || topAssisters[0]
-        if (player && parseFloat(player.assists_per_game) > 0) {
-          bestPlayers.push(player)
-          usedIds.add(player.id)
-          console.log('✅ Seleccionado como máximo asistente:', player.first_name)
-        }
-      }
-      
-      // 3. Máximo reboteador (diferente a los anteriores)
-      if (topRebounders.length > 0) {
-        const player = topRebounders.find(p => !usedIds.has(p.id)) || topRebounders[0]
-        if (player && parseFloat(player.rebounds_per_game) > 0) {
-          bestPlayers.push(player)
-          usedIds.add(player.id)
-          console.log('✅ Seleccionado como máximo reboteador:', player.first_name)
-        }
-      }
-      
-      // 4. Máximo triplista (diferente a los anteriores)
-      if (topThreePointers.length > 0) {
-        const player = topThreePointers.find(p => !usedIds.has(p.id)) || topThreePointers[0]
-        if (player && (player.three_points_made > 0)) {
-          bestPlayers.push(player)
-          console.log('✅ Seleccionado como máximo triplista:', player.first_name)
-        }
-      }
-      
-      // Si no encontramos 4 jugadores, llenar con los mejores disponibles
-      if (bestPlayers.length < 4) {
-        const remainingPlayers = playersToUse
-          .filter(p => !usedIds.has(p.id))
-          .sort((a, b) => parseFloat(b.points_per_game) - parseFloat(a.points_per_game))
-          .slice(0, 4 - bestPlayers.length)
-        
-        bestPlayers.push(...remainingPlayers)
-        console.log('➕ Añadidos jugadores adicionales:', remainingPlayers.map(p => p.first_name))
-      }
-      
-      console.log('=== RESULTADO FINAL ===')
-      console.log('Total de figuras encontradas:', bestPlayers.length)
-      bestPlayers.forEach((player, index) => {
-        console.log(`${index + 1}. ${player.first_name} ${player.last_name} - ${player.team?.name}`)
-      })
-      
-      return bestPlayers.slice(0, 4)
-      
-    } catch (error) {
-      console.error('Error en getTopPlayers:', error)
-      return []
+    if (!players.length) return []
+    
+    const eligible = players.filter(p => p.games_played >= 1)
+    if (eligible.length <= 4) return eligible.slice(0, 4)
+    
+    const selected = []
+    const usedIds = new Set()
+    
+    const findBest = (statKey, isString = false) => {
+      return eligible
+        .filter(p => !usedIds.has(p.id))
+        .reduce((best, current) => {
+          const bestVal = isString ? parseFloat(best[statKey]) || 0 : best[statKey] || 0
+          const currVal = isString ? parseFloat(current[statKey]) || 0 : current[statKey] || 0
+          return currVal > bestVal ? current : best
+        }, { [statKey]: -Infinity })
     }
+    
+    const bestScorer = findBest('points_per_game', true)
+    if (bestScorer.id && parseFloat(bestScorer.points_per_game) > 0) {
+      selected.push(bestScorer)
+      usedIds.add(bestScorer.id)
+    }
+    
+    const bestAssister = findBest('assists_per_game', true)
+    if (bestAssister.id && parseFloat(bestAssister.assists_per_game) > 0) {
+      selected.push(bestAssister)
+      usedIds.add(bestAssister.id)
+    }
+    
+    const bestRebounder = findBest('rebounds_per_game', true)
+    if (bestRebounder.id && parseFloat(bestRebounder.rebounds_per_game) > 0) {
+      selected.push(bestRebounder)
+      usedIds.add(bestRebounder.id)
+    }
+    
+    const bestThreePointer = findBest('three_points_made', false)
+    if (bestThreePointer.id && bestThreePointer.three_points_made > 0) {
+      selected.push(bestThreePointer)
+      usedIds.add(bestThreePointer.id)
+    }
+    
+    if (selected.length < 4) {
+      const remaining = eligible
+        .filter(p => !usedIds.has(p.id))
+        .sort((a, b) => parseFloat(b.points_per_game) - parseFloat(a.points_per_game))
+        .slice(0, 4 - selected.length)
+      
+      selected.push(...remaining)
+    }
+    
+    return selected.slice(0, 4)
   }, [players])
 
-  // Obtener jugadores por equipo
   const getPlayersByTeam = useCallback((teamId) => {
     if (!teamId) return []
     return players.filter(player => player.team_id === teamId)
   }, [players])
 
-  // Buscar jugadores
   const searchPlayers = useCallback((searchTerm) => {
-    if (!searchTerm || searchTerm.trim().length < 2) return players
+    if (!searchTerm?.trim() || searchTerm.trim().length < 2) return players
     
     const term = searchTerm.toLowerCase().trim()
+    const results = []
     
-    return players.filter(player => {
-      const fullName = `${player.first_name} ${player.last_name}`.toLowerCase()
-      return fullName.includes(term) ||
-             player.first_name.toLowerCase().includes(term) ||
-             player.last_name.toLowerCase().includes(term) ||
-             (player.team?.name && player.team.name.toLowerCase().includes(term)) ||
-             (player.jersey_number && player.jersey_number.toString().includes(term))
-    })
+    for (const player of players) {
+      if (results.length >= 50) break
+      
+      if (
+        player.first_name.toLowerCase().includes(term) ||
+        player.last_name.toLowerCase().includes(term) ||
+        `${player.first_name} ${player.last_name}`.toLowerCase().includes(term) ||
+        player.jersey_number?.toString().includes(term) ||
+        player.team?.name?.toLowerCase().includes(term)
+      ) {
+        results.push(player)
+      }
+    }
+    
+    return results
   }, [players])
 
-  // Cargar estadísticas detalladas de un jugador
   const loadPlayerStats = useCallback(async (playerId) => {
     if (!playerId) return []
     
     try {
-      const { data: statsData, error } = await supabase
+      const { data, error } = await supabase
         .from('player_stats')
         .select(`
           match_id,
@@ -393,46 +262,31 @@ export const usePlayers = () => {
           three_points_made,
           three_points_attempted,
           minutes_played,
-          matches!inner(
-            match_date,
-            home_team_id,
-            away_team_id,
-            home_score,
-            away_score,
-            home_team:home_team_id(name),
-            away_team:away_team_id(name)
-          )
+          matches!inner(match_date, home_score, away_score, home_team:home_team_id(name), away_team:away_team_id(name))
         `)
         .eq('player_id', playerId)
         .order('match_date', { ascending: false })
-        .limit(20)
+        .limit(15)
       
       if (error) throw error
-      
-      return statsData || []
+      return data || []
     } catch (err) {
-      console.error('Error loading player stats:', err)
       return []
     }
   }, [])
 
-  // Efecto inicial
   useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchPlayersWithStats()
-    }, 500)
-    
-    return () => clearTimeout(timer)
+    fetchPlayersWithStats()
   }, [fetchPlayersWithStats])
 
   return { 
     players, 
     loading, 
-    error, 
+    error,
     getPlayersByTeam,
     getTopPlayers,
     searchPlayers,
     loadPlayerStats,
-    refetch: () => fetchPlayersWithStats(true) 
+    refetch: () => fetchPlayersWithStats(true)
   }
 }

@@ -127,14 +127,13 @@ const TopPlayers = () => {
     )
   }
 
-  // Calcular estadísticas
+
   const playersWithGames = players.filter(p => p.games_played > 0)
   const playersWithMinGames = players.filter(p => p.games_played >= MINIMUM_GAMES)
   
-  // Obtener líderes reales y top 3
   const realLeaders = getRealLeaders()
   
-  // Configurar las categorías de líderes
+  
   const leaderConfigs = [
     { 
       type: 'points', 
@@ -170,7 +169,6 @@ const TopPlayers = () => {
     }
   ]
 
-  // Crear líderes basados en líderes reales
   const leaders = leaderConfigs.map((config, index) => {
     const player = config.leader
     const top3 = config.top3 || []
@@ -221,10 +219,9 @@ const TopPlayers = () => {
         top3: top3.slice(0, 3)
       }
     } else {
-      // Si no hay jugador con mínimo de partidos
+   
       const playersWithGames = players.filter(p => p.games_played > 0 && p.games_played < MINIMUM_GAMES)
-      
-      // Top 3 entre jugadores con pocos partidos
+  
       const bestWithFewGames = [...playersWithGames]
         .sort((a, b) => {
           switch(config.type) {
@@ -259,7 +256,6 @@ const TopPlayers = () => {
     }
   })
 
-  // Si hay jugadores pero no suficientes con el mínimo de partidos
   const noLeadersWithMinimumGames = leaders.every(leader => !leader.hasMinimumGames)
   
   if (playersWithGames.length > 0 && noLeadersWithMinimumGames) {
@@ -267,7 +263,6 @@ const TopPlayers = () => {
       <div className="max-w-6xl mx-auto px-4 py-8">
         <h2 className="text-3xl font-bold text-center mb-8">Figuras Destacadas</h2>
         
-        {/* Panel informativo */}
         <div className="bg-white rounded-xl p-8 mb-8 border border-gray-300">
           <div className="flex items-center gap-3 mb-4">
             <FaChartBar className="text-gray-700" />
@@ -314,7 +309,6 @@ const TopPlayers = () => {
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Figuras Destacadas</h2>
       </div>
       
-      {/* Figuras destacadas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         {leaders.map((leader, index) => (
           leader.player && leader.hasMinimumGames ? (
@@ -358,7 +352,6 @@ const TopPlayers = () => {
         ))}
       </div>
       
-      {/* Top 3 en cada categoría */}
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <FaUsers className="text-gray-900 text-xl" />
@@ -368,7 +361,7 @@ const TopPlayers = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {leaders.map((leader, categoryIndex) => (
             <div key={categoryIndex} className="bg-white rounded-xl overflow-hidden border border-gray-300">
-              {/* Encabezado de la categoría */}
+             
               <div className="bg-gray-900 p-4">
                 <div className="flex items-center gap-3">
                   <leader.icon className="text-white text-xl" />
@@ -377,12 +370,12 @@ const TopPlayers = () => {
                 <p className="text-gray-300 text-sm mt-1">{leader.description}</p>
               </div>
               
-              {/* Lista de jugadores del top 3 */}
+              
               <div className="p-4">
                 {leader.top3 && leader.top3.length > 0 ? (
                   <div className="space-y-3">
                     {leader.top3.map((player, playerIndex) => {
-                      // Calcular estadística específica para cada jugador
+                      
                       let statValue = '0'
                       let statDescription = leader.description
                       
